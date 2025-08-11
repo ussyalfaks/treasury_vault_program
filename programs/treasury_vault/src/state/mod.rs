@@ -5,8 +5,10 @@ pub mod treasury_config;
 pub mod recipient;
 pub mod payout_schedule;
 pub mod token_vault;
+pub mod streaming_schedule;
 
 pub use treasury_config::*;
 pub use recipient::*;
 pub use payout_schedule::*;
 pub use token_vault::*;
+pub use streaming_schedule::*;

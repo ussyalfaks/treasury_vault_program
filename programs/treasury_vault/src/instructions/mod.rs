@@ -12,6 +12,9 @@ pub mod execute_sol_payout;
 pub mod execute_token_payout;
 pub mod emergency_withdraw_sol;
 pub mod emergency_withdraw_token;
+pub mod create_streaming_schedule;
+pub mod withdraw_from_stream; 
+pub mod cancel_stream;
 
 pub use initialize_treasury::*;
 pub use update_treasury_config::*;
@@ -26,3 +29,6 @@ pub use execute_sol_payout::*;
 pub use execute_token_payout::*;
 pub use emergency_withdraw_sol::*;
 pub use emergency_withdraw_token::*;
+pub use create_streaming_schedule::*;
+pub use withdraw_from_stream::*;
+pub use cancel_stream::*;

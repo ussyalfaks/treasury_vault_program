@@ -27,4 +27,12 @@ pub enum ErrorCode {
     PayoutNotDue,
     #[msg("The maximum number of executions for this schedule has been reached")]
     MaxExecutionsReached,
+    #[msg("The streaming schedule is invalid or parameters are incorrect")]
+    InvalidStreamingSchedule,
+    #[msg("The stream is not active or has been fully withdrawn")]
+    StreamInactive,
+    #[msg("No withdrawable amount available from stream yet")]
+    NoWithdrawableAmount,
+    #[msg("Stream cannot be cancelled")]
+    StreamNotCancelable,
 }

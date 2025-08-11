@@ -234,6 +234,45 @@ pub mod treasury_vault {
 		emergency_withdraw_token::handler(ctx, amount)
 	}
 
+	// Create a new streaming payment schedule
+pub fn create_streaming_schedule(
+    ctx: Context<CreateStreamingSchedule>,
+    recipient_address: Pubkey,
+    stream_id: u64,
+    total_amount: u64,
+    amount_per_second: u64,
+    start_time: i64,
+    cliff_time: i64,
+    duration_seconds: u64,
+    token_mint: Option<Pubkey>,
+    _treasury_seed_name: String,
+) -> Result<()> {
+    create_streaming_schedule::handler(
+        ctx, recipient_address, stream_id, total_amount,
+        amount_per_second, start_time, cliff_time,
+        duration_seconds, token_mint
+    )
+}
+
+/// Withdraw available tokens from a stream
+pub fn withdraw_from_stream(
+    ctx: Context<WithdrawFromStream>,
+    stream_id: u64,
+    _treasury_seed_name: String,
+) -> Result<()> {
+    withdraw_from_stream::handler(ctx, stream_id)
+}
+
+/// Cancel an active stream
+pub fn cancel_stream(
+    ctx: Context<CancelStream>,
+    recipient_address: Pubkey,
+    stream_id: u64,
+    _treasury_seed_name: String,
+) -> Result<()> {
+    cancel_stream::handler(ctx, recipient_address, stream_id)
+}
+
 
 
 }
