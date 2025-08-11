@@ -1,4 +1,4 @@
-# Treasury Vault Program
+<img width="1440" height="900" alt="Screenshot 2025-08-11 at 12 02 46 PM" src="https://github.com/user-attachments/assets/26a025c6-0b4f-4607-ad00-49c84fe2ceb0" /># Treasury Vault Program
 
 A comprehensive Solana smart contract for managing decentralized treasury operations with programmable payout logic, streaming payments, and multi-role access control.
 
@@ -427,6 +427,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Repository**: [treasury_vault_program](https://github.com/ussyalfaks/treasury_vault_program)
 
 ---
+<img width="1440" height="900" alt="Screenshot 2025-08-11 at 12 02 46 PM" src="https://github.com/user-attachments/assets/1d16d3b3-010f-43cd-84bc-73d7d5f28bc2" />
 
 **Program ID**: `FZF2W7peTaeeAYkL5sz81drHMNW5qQemerM1Cx8FViHC`
 
