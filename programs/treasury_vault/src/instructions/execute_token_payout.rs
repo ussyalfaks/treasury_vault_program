@@ -118,28 +118,30 @@ impl<'info> ExecuteTokenPayout<'info> {
 /// - recipient_address: [Pubkey] The recipient's wallet address
 /// - schedule_id: [u64] Unique identifier for this schedule
 /// - treasury_seed_name: [String] Auto-generated, from the input "treasury" for the its seed definition "Treasury", sets the seed named "name"
+
+
 pub fn handler(
     ctx: Context<ExecuteTokenPayout>,
-    recipient_address: Pubkey,
-    schedule_id: u64,
+    _recipient_address: Pubkey, // Add underscore to fix unused variable warning
+    _schedule_id: u64, // Add underscore to fix unused variable warning
 ) -> Result<()> {
     // Get current time
     let current_time = Clock::get()?.unix_timestamp;
     
     // Verify payout schedule is active
     if !ctx.accounts.payout_schedule.is_active {
-        return Err(error::ErrorCode::InvalidSchedule.into());
+        return Err(crate::error::ErrorCode::InvalidSchedule.into());
     }
     
     // Verify payout is due
     if current_time < ctx.accounts.payout_schedule.start_time {
-        return Err(error::ErrorCode::PayoutNotDue.into());
+        return Err(crate::error::ErrorCode::PayoutNotDue.into());
     }
     
     // Check if max executions reached
     if ctx.accounts.payout_schedule.max_executions > 0 && 
        ctx.accounts.payout_schedule.executions >= ctx.accounts.payout_schedule.max_executions {
-        return Err(error::ErrorCode::MaxExecutionsReached.into());
+        return Err(crate::error::ErrorCode::MaxExecutionsReached.into());
     }
     
     // For recurring payments, check if next payment is due
@@ -148,82 +150,106 @@ pub fn handler(
         let next_execution = ctx.accounts.payout_schedule.last_execution_time + 
                             ctx.accounts.payout_schedule.interval_seconds as i64;
         if current_time < next_execution {
-            return Err(error::ErrorCode::PayoutNotDue.into());
+            return Err(crate::error::ErrorCode::PayoutNotDue.into());
         }
     }
     
     // Verify token mint matches the schedule
     if ctx.accounts.payout_schedule.token_mint.is_none() || 
        ctx.accounts.payout_schedule.token_mint.unwrap() != ctx.accounts.token_mint.key() {
-        return Err(error::ErrorCode::InvalidTokenVault.into());
+        return Err(crate::error::ErrorCode::InvalidTokenVault.into());
     }
     
     // Check if token vault has enough funds
     let amount = ctx.accounts.payout_schedule.amount;
     if ctx.accounts.token_vault.balance < amount {
-        return Err(error::ErrorCode::InsufficientFunds.into());
+        return Err(crate::error::ErrorCode::InsufficientFunds.into());
     }
     
-    // Check spending limits
-    let treasury = &mut ctx.accounts.treasury;
-    
-    // Reset daily limit if needed
-    if current_time - treasury.last_day_reset >= 86400 { // 24 hours in seconds
-        treasury.daily_total = 0;
-        treasury.last_day_reset = current_time;
+    // Do spending limit checks first (before taking mutable references)
+    {
+        let treasury = &ctx.accounts.treasury;
+        let mut daily_total = treasury.daily_total;
+        let mut weekly_total = treasury.weekly_total;
+        let mut monthly_total = treasury.monthly_total;
+        
+        // Reset totals if time periods have passed
+        if current_time - treasury.last_day_reset >= 86400 {
+            daily_total = 0;
+        }
+        
+        if current_time - treasury.last_week_reset >= 604800 {
+            weekly_total = 0;
+        }
+        
+        if current_time - treasury.last_month_reset >= 2592000 {
+            monthly_total = 0;
+        }
+        
+        // Check limits
+        if daily_total.checked_add(amount).unwrap() > treasury.daily_limit {
+            return Err(crate::error::ErrorCode::SpendingLimitExceeded.into());
+        }
+        
+        if weekly_total.checked_add(amount).unwrap() > treasury.weekly_limit {
+            return Err(crate::error::ErrorCode::SpendingLimitExceeded.into());
+        }
+        
+        if monthly_total.checked_add(amount).unwrap() > treasury.monthly_limit {
+            return Err(crate::error::ErrorCode::SpendingLimitExceeded.into());
+        }
     }
     
-    // Reset weekly limit if needed
-    if current_time - treasury.last_week_reset >= 604800 { // 7 days in seconds
-        treasury.weekly_total = 0;
-        treasury.last_week_reset = current_time;
-    }
-    
-    // Reset monthly limit if needed
-    if current_time - treasury.last_month_reset >= 2592000 { // 30 days in seconds
-        treasury.monthly_total = 0;
-        treasury.last_month_reset = current_time;
-    }
-    
-    // Check if this payment would exceed limits
-    if treasury.daily_total.checked_add(amount).unwrap() > treasury.daily_limit {
-        return Err(error::ErrorCode::SpendingLimitExceeded.into());
-    }
-    
-    if treasury.weekly_total.checked_add(amount).unwrap() > treasury.weekly_limit {
-        return Err(error::ErrorCode::SpendingLimitExceeded.into());
-    }
-    
-    if treasury.monthly_total.checked_add(amount).unwrap() > treasury.monthly_limit {
-        return Err(error::ErrorCode::SpendingLimitExceeded.into());
-    }
-    
-    // Transfer tokens
+    // Transfer tokens (this needs immutable borrow of ctx.accounts)
     ctx.accounts.cpi_csl_spl_token_transfer(amount)?;
     
-    // Update token vault balance
-    let token_vault = &mut ctx.accounts.token_vault;
-    token_vault.balance = token_vault.balance.checked_sub(amount).unwrap();
+    // Now update all state (mutable borrows)
+    {
+        let token_vault = &mut ctx.accounts.token_vault;
+        token_vault.balance = token_vault.balance.checked_sub(amount).unwrap();
+    }
     
-    // Update treasury totals
-    treasury.daily_total = treasury.daily_total.checked_add(amount).unwrap();
-    treasury.weekly_total = treasury.weekly_total.checked_add(amount).unwrap();
-    treasury.monthly_total = treasury.monthly_total.checked_add(amount).unwrap();
+    {
+        let treasury = &mut ctx.accounts.treasury;
+        
+        // Reset and update time periods
+        if current_time - treasury.last_day_reset >= 86400 {
+            treasury.daily_total = 0;
+            treasury.last_day_reset = current_time;
+        }
+        
+        if current_time - treasury.last_week_reset >= 604800 {
+            treasury.weekly_total = 0;
+            treasury.last_week_reset = current_time;
+        }
+        
+        if current_time - treasury.last_month_reset >= 2592000 {
+            treasury.monthly_total = 0;
+            treasury.last_month_reset = current_time;
+        }
+        
+        // Update totals
+        treasury.daily_total = treasury.daily_total.checked_add(amount).unwrap();
+        treasury.weekly_total = treasury.weekly_total.checked_add(amount).unwrap();
+        treasury.monthly_total = treasury.monthly_total.checked_add(amount).unwrap();
+    }
     
-    // Update recipient
-    let recipient = &mut ctx.accounts.recipient;
-    recipient.total_received = recipient.total_received.checked_add(amount).unwrap();
-    recipient.last_payout_time = current_time;
+    {
+        let recipient = &mut ctx.accounts.recipient;
+        recipient.total_received = recipient.total_received.checked_add(amount).unwrap();
+        recipient.last_payout_time = current_time;
+    }
     
-    // Update payout schedule
-    let payout_schedule = &mut ctx.accounts.payout_schedule;
-    payout_schedule.executions = payout_schedule.executions.checked_add(1).unwrap();
-    payout_schedule.last_execution_time = current_time;
-    
-    // If this was the last execution and max_executions is set, mark as inactive
-    if payout_schedule.max_executions > 0 && 
-       payout_schedule.executions >= payout_schedule.max_executions {
-        payout_schedule.is_active = false;
+    {
+        let payout_schedule = &mut ctx.accounts.payout_schedule;
+        payout_schedule.executions = payout_schedule.executions.checked_add(1).unwrap();
+        payout_schedule.last_execution_time = current_time;
+        
+        // If max executions reached, mark inactive
+        if payout_schedule.max_executions > 0 && 
+           payout_schedule.executions >= payout_schedule.max_executions {
+            payout_schedule.is_active = false;
+        }
     }
     
     Ok(())

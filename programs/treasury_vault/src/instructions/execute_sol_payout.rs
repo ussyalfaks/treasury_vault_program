@@ -78,18 +78,19 @@ pub fn handler(
     
     // Verify payout schedule is active
     if !ctx.accounts.payout_schedule.is_active {
-        return Err(error::ErrorCode::InvalidSchedule.into());
+        return Err(crate::error::ErrorCode::InvalidSchedule.into());
+        
     }
     
     // Verify payout is due
     if current_time < ctx.accounts.payout_schedule.start_time {
-        return Err(error::ErrorCode::PayoutNotDue.into());
+        return Err(crate::error::ErrorCode::PayoutNotDue.into());
     }
     
     // Check if max executions reached
     if ctx.accounts.payout_schedule.max_executions > 0 && 
        ctx.accounts.payout_schedule.executions >= ctx.accounts.payout_schedule.max_executions {
-        return Err(error::ErrorCode::MaxExecutionsReached.into());
+        return Err(crate::error::ErrorCode::MaxExecutionsReached.into());
     }
     
     // For recurring payments, check if next payment is due
@@ -98,7 +99,7 @@ pub fn handler(
         let next_execution = ctx.accounts.payout_schedule.last_execution_time + 
                             ctx.accounts.payout_schedule.interval_seconds as i64;
         if current_time < next_execution {
-            return Err(error::ErrorCode::PayoutNotDue.into());
+            return Err(crate::error::ErrorCode::PayoutNotDue.into());
         }
     }
     
@@ -106,7 +107,7 @@ pub fn handler(
     let amount = ctx.accounts.payout_schedule.amount;
     let treasury_info = ctx.accounts.treasury.to_account_info();
     if **treasury_info.lamports.borrow() < amount {
-        return Err(error::ErrorCode::InsufficientFunds.into());
+        return Err(crate::error::ErrorCode::InsufficientFunds.into());
     }
     
     // Check spending limits
@@ -132,15 +133,15 @@ pub fn handler(
     
     // Check if this payment would exceed limits
     if treasury.daily_total.checked_add(amount).unwrap() > treasury.daily_limit {
-        return Err(error::ErrorCode::SpendingLimitExceeded.into());
+        return Err(crate::error::ErrorCode::SpendingLimitExceeded.into());
     }
     
     if treasury.weekly_total.checked_add(amount).unwrap() > treasury.weekly_limit {
-        return Err(error::ErrorCode::SpendingLimitExceeded.into());
+        return Err(crate::error::ErrorCode::SpendingLimitExceeded.into());
     }
     
     if treasury.monthly_total.checked_add(amount).unwrap() > treasury.monthly_limit {
-        return Err(error::ErrorCode::SpendingLimitExceeded.into());
+        return Err(crate::error::ErrorCode::SpendingLimitExceeded.into());
     }
     
     // Transfer SOL

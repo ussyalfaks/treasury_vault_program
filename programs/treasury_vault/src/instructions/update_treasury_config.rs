@@ -64,7 +64,7 @@ pub fn handler(
     // Verify the signer is the admin
     let treasury = &mut ctx.accounts.treasury;
     if ctx.accounts.admin.key() != treasury.admin {
-        return Err(error::ErrorCode::UnauthorizedAccess.into());
+        return Err(crate::error::ErrorCode::UnauthorizedAccess.into());
     }
     
     // Update treasury config with new values if provided

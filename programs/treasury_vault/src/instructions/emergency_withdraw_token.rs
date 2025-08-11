@@ -92,12 +92,12 @@ pub fn handler(
 ) -> Result<()> {
     // Verify the signer is the admin
     if ctx.accounts.admin.key() != ctx.accounts.treasury.admin {
-        return Err(error::ErrorCode::UnauthorizedAccess.into());
+        return Err(crate::error::ErrorCode::UnauthorizedAccess.into());
     }
     
     // Check if token vault has enough funds
     if ctx.accounts.token_vault.balance < amount {
-        return Err(error::ErrorCode::InsufficientFunds.into());
+        return Err(crate::error::ErrorCode::InsufficientFunds.into());
     }
     
     // Transfer tokens

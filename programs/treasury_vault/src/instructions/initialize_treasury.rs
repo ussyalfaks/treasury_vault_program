@@ -54,7 +54,7 @@ pub struct InitializeTreasury<'info> {
 /// - token_gate_mint: [Option<Pubkey>] Optional mint address for token gating
 /// - token_gate_amount: [u64] Minimum amount of tokens required for token gating
 pub fn handler(
-    ctx: &Context<InitializeTreasury>,
+    ctx: Context<InitializeTreasury>, // Remove the & here
     name: String,
     description: String,
     treasurer: Pubkey,

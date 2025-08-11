@@ -81,7 +81,7 @@ pub fn handler(
     // Verify authority is admin or treasurer
     let treasury = &ctx.accounts.treasury;
     if ctx.accounts.authority.key() != treasury.admin && ctx.accounts.authority.key() != treasury.treasurer {
-        return Err(error::ErrorCode::UnauthorizedAccess.into());
+        return Err(crate::error::ErrorCode::UnauthorizedAccess.into());
     }
     
     // Update payout schedule with new values if provided

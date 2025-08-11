@@ -35,7 +35,7 @@ pub struct InitializeTokenVault<'info> {
     pub token_vault: Account<'info, TokenVault>,
 
     pub token_mint: Account<'info, Mint>,
-#[account(mut)]
+    #[account(mut)]
     pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,
@@ -51,7 +51,7 @@ pub struct InitializeTokenVault<'info> {
         payer = funding,
         associated_token::mint = mint,
         associated_token::authority = wallet,
-        associated_token::token_program = token_program,
+        // Remove the associated_token::token_program line that's causing the error
     )]
     pub assoc_token_account: Account<'info, TokenAccount>,
 
@@ -64,7 +64,6 @@ pub struct InitializeTokenVault<'info> {
 
     pub csl_spl_assoc_token_v0_0_0: Program<'info, AssociatedToken>,
 }
-
 /// Accounts:
 /// 0. `[]` treasury: [TreasuryConfig] 
 /// 1. `[writable]` token_vault: [TokenVault] 
@@ -94,7 +93,7 @@ pub fn handler(
     // Verify authority is admin or treasurer
     let treasury = &ctx.accounts.treasury;
     if ctx.accounts.authority.key() != treasury.admin && ctx.accounts.authority.key() != treasury.treasurer {
-        return Err(error::ErrorCode::UnauthorizedAccess.into());
+        return Err(crate::error::ErrorCode::UnauthorizedAccess.into());
     }
     
     Ok(())

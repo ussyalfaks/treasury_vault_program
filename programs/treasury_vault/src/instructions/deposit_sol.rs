@@ -46,7 +46,7 @@ pub fn handler(
     
     // Check if depositor has enough SOL
     if **depositor_info.lamports.borrow() < amount {
-        return Err(error::ErrorCode::InsufficientFunds.into());
+        return Err(crate::error::ErrorCode::InsufficientFunds.into());
     }
     
     // Transfer SOL

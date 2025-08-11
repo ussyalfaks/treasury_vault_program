@@ -42,13 +42,13 @@ pub fn handler(
 ) -> Result<()> {
     // Verify the signer is the admin
     if ctx.accounts.admin.key() != ctx.accounts.treasury.admin {
-        return Err(error::ErrorCode::UnauthorizedAccess.into());
+        return Err(crate::error::ErrorCode::UnauthorizedAccess.into());
     }
     
     // Check if treasury has enough funds
     let treasury_info = ctx.accounts.treasury.to_account_info();
     if **treasury_info.lamports.borrow() < amount {
-        return Err(error::ErrorCode::InsufficientFunds.into());
+        return Err(crate::error::ErrorCode::InsufficientFunds.into());
     }
     
     // Transfer SOL
