@@ -35,7 +35,7 @@ pub struct InitializeTokenVault<'info> {
     pub token_vault: Account<'info, TokenVault>,
 
     pub token_mint: Account<'info, Mint>,
-
+#[account(mut)]
     pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,

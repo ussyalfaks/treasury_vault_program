@@ -51,7 +51,7 @@ pub struct CreatePayoutSchedule<'info> {
         bump
     )]
     pub payout_schedule: Account<'info, PayoutSchedule>,
-
+#[account(mut)]
     pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,

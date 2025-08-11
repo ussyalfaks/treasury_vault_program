@@ -35,8 +35,9 @@ pub struct AddRecipient<'info> {
         ],
         bump
     )]
+    
     pub recipient: Account<'info, Recipient>,
-
+#[account(mut)]
     pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,

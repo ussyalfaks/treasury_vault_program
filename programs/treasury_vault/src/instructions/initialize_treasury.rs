@@ -20,6 +20,7 @@ use anchor_spl::{
     token_gate_amount: u64,
 )]
 pub struct InitializeTreasury<'info> {
+    #[account(mut)]
     pub admin: Signer<'info>,
 
     #[account(
@@ -53,7 +54,7 @@ pub struct InitializeTreasury<'info> {
 /// - token_gate_mint: [Option<Pubkey>] Optional mint address for token gating
 /// - token_gate_amount: [u64] Minimum amount of tokens required for token gating
 pub fn handler(
-    ctx: Context<InitializeTreasury>,
+    ctx: &Context<InitializeTreasury>,
     name: String,
     description: String,
     treasurer: Pubkey,
