@@ -59,7 +59,7 @@ async fn deposit_sol_ix_success() {
 		Account {
 			lamports: 1_000_000_000_000,
 			data: vec![],
-			owner: treasury_vault_ix_interface::ID,
+			owner: system_program::ID,
 			executable: false,
 			rent_epoch: 0,
 		},

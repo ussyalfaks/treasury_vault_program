@@ -57,6 +57,8 @@ pub mod treasury_vault_ix_interface {
 		}
 	};
 
+	pub use treasury_vault::ID;
+
 	pub fn initialize_treasury_ix_setup(
 		admin: &Keypair,
 		treasury: Pubkey,

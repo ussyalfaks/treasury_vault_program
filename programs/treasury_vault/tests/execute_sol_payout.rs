@@ -57,7 +57,7 @@ async fn execute_sol_payout_ix_success() {
 	let (recipient_pda, _recipient_pda_bump) = Pubkey::find_program_address(
 		&[
 			b"recipient",
-			treasury_pubkey.as_ref(),
+			treasury_pda.as_ref(),
 			recipient_address_pubkey.as_ref(),
 		],
 		&treasury_vault::ID,
@@ -66,8 +66,8 @@ async fn execute_sol_payout_ix_success() {
 	let (payout_schedule_pda, _payout_schedule_pda_bump) = Pubkey::find_program_address(
 		&[
 			b"schedule",
-			treasury_pubkey.as_ref(),
-			recipient_pubkey.as_ref(),
+			treasury_pda.as_ref(),
+			recipient_pda.as_ref(),
 			schedule_id.to_le_bytes().as_ref(),
 		],
 		&treasury_vault::ID,
