@@ -62,7 +62,7 @@ pub struct InitializeTokenVault<'info> {
 
     pub token_program: Program<'info, Token>,
 
-    pub csl_spl_assoc_token_v0_0_0: Program<'info, AssociatedToken>,
+    pub associated_token_program: Program<'info, AssociatedToken>, // ✅ required name
 }
 /// Accounts:
 /// 0. `[]` treasury: [TreasuryConfig] 
