@@ -1,4 +1,4 @@
-<img width="1440" height="900" alt="Screenshot 2025-08-11 at 12 02 46 PM" src="https://github.com/user-attachments/assets/26a025c6-0b4f-4607-ad00-49c84fe2ceb0" /># Treasury Vault Program
+Treasury Vault Program
 
 A comprehensive Solana smart contract for managing decentralized treasury operations with programmable payout logic, streaming payments, and multi-role access control.
 
