@@ -71,7 +71,7 @@ async fn deposit_token_ix_success() {
 	let (token_vault_pda, _token_vault_pda_bump) = Pubkey::find_program_address(
 		&[
 			b"token_vault",
-			treasury_pubkey.as_ref(),
+			treasury_pda.as_ref(),
 			token_mint_pubkey.as_ref(),
 		],
 		&treasury_vault::ID,
@@ -83,7 +83,7 @@ async fn deposit_token_ix_success() {
 		Account {
 			lamports: 1_000_000_000_000,
 			data: vec![],
-			owner: treasury_vault_ix_interface::ID,
+			owner: treasury_vault::ID,
 			executable: false,
 			rent_epoch: 0,
 		},

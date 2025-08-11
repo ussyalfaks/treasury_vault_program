@@ -135,7 +135,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&admin.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -163,7 +163,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&depositor.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -184,7 +184,7 @@ pub mod treasury_vault_ix_interface {
 		wallet: Pubkey,
 		mint: Pubkey,
 		token_program: Pubkey,
-		csl_spl_assoc_token_v0_0_0: Pubkey,
+		associated_token_program: Pubkey,
 		treasury_seed_name: &String,
 		recent_blockhash: Hash,
 	) -> Transaction {
@@ -199,7 +199,7 @@ pub mod treasury_vault_ix_interface {
 			wallet: wallet,
 			mint: mint,
 			token_program: token_program,
-			csl_spl_assoc_token_v0_0_0: csl_spl_assoc_token_v0_0_0,
+			associated_token_program: associated_token_program,
 		};
 
 		let data = 	treasury_vault_instruction::InitializeTokenVault {
@@ -207,7 +207,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&authority.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -248,7 +248,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&depositor.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -268,6 +268,9 @@ pub mod treasury_vault_ix_interface {
 		name: &String,
 		role: u8,
 		treasury_seed_name: &String,
+		token_gate_mint: Option<Pubkey>,
+		recipient_token_account: Option<Pubkey>,
+		token_program: Option<Pubkey>,
 		recent_blockhash: Hash,
 	) -> Transaction {
 		let accounts = treasury_vault_accounts::AddRecipient {
@@ -275,6 +278,9 @@ pub mod treasury_vault_ix_interface {
 			recipient: recipient,
 			authority: authority.pubkey(),
 			system_program: system_program,
+			token_gate_mint: token_gate_mint,
+			recipient_token_account: recipient_token_account,
+			token_program: token_program,
 		};
 
 		let data = 	treasury_vault_instruction::AddRecipient {
@@ -285,7 +291,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&authority.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -321,7 +327,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&authority.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -367,7 +373,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&authority.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -411,7 +417,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&authority.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -520,7 +526,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&admin.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -560,7 +566,7 @@ pub mod treasury_vault_ix_interface {
 		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
 		let mut transaction = Transaction::new_with_payer(
 			&[instruction], 
-			Some(&treasury.pubkey()),
+			Some(&admin.pubkey()),
 		);
 
 		transaction.sign(&[
@@ -571,54 +577,135 @@ pub mod treasury_vault_ix_interface {
 		return transaction;
 	}
 
+	pub fn create_streaming_schedule_ix_setup(
+		treasury: Pubkey,
+		recipient: Pubkey,
+		streaming_schedule: Pubkey,
+		authority: &Keypair,
+		system_program: Pubkey,
+		recipient_address: Pubkey,
+		stream_id: u64,
+		total_amount: u64,
+		amount_per_second: u64,
+		start_time: i64,
+		cliff_time: i64,
+		duration_seconds: u64,
+		token_mint: Option<Pubkey>,
+		treasury_seed_name: &String,
+		recent_blockhash: Hash,
+	) -> Transaction {
+		let accounts = treasury_vault_accounts::CreateStreamingSchedule {
+			treasury: treasury,
+			recipient: recipient,
+			streaming_schedule: streaming_schedule,
+			authority: authority.pubkey(),
+			system_program: system_program,
+		};
+
+		let data = 	treasury_vault_instruction::CreateStreamingSchedule {
+				recipient_address,
+				stream_id,
+				total_amount,
+				amount_per_second,
+				start_time,
+				cliff_time,
+				duration_seconds,
+				token_mint,
+				_treasury_seed_name: treasury_seed_name.clone(),
+		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
+		let mut transaction = Transaction::new_with_payer(
+			&[instruction], 
+			Some(&authority.pubkey()),
+		);
+
+		transaction.sign(&[
+			&authority,
+		], recent_blockhash);
+
+		return transaction;
+	}
+
+	pub fn cancel_stream_ix_setup(
+		treasury: Pubkey,
+		recipient: Pubkey,
+		streaming_schedule: Pubkey,
+		authority: &Keypair,
+		recipient_wallet: Pubkey,
+		recipient_address: Pubkey,
+		stream_id: u64,
+		treasury_seed_name: &String,
+		recent_blockhash: Hash,
+	) -> Transaction {
+		let accounts = treasury_vault_accounts::CancelStream {
+			treasury: treasury,
+			recipient: recipient,
+			streaming_schedule: streaming_schedule,
+			authority: authority.pubkey(),
+			recipient_wallet: recipient_wallet,
+		};
+
+		let data = 	treasury_vault_instruction::CancelStream {
+				recipient_address,
+				stream_id,
+				_treasury_seed_name: treasury_seed_name.clone(),
+		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
+		let mut transaction = Transaction::new_with_payer(
+			&[instruction], 
+			Some(&authority.pubkey()),
+		);
+
+		transaction.sign(&[
+			&authority,
+		], recent_blockhash);
+
+		return transaction;
+	}
+
+	pub fn withdraw_from_stream_ix_setup(
+		treasury: Pubkey,
+		recipient: Pubkey,
+		streaming_schedule: Pubkey,
+		recipient_signer: &Keypair,
+		stream_id: u64,
+		treasury_seed_name: &String,
+		recent_blockhash: Hash,
+	) -> Transaction {
+		let accounts = treasury_vault_accounts::WithdrawFromStream {
+			treasury: treasury,
+			recipient: recipient,
+			streaming_schedule: streaming_schedule,
+			recipient_signer: recipient_signer.pubkey(),
+		};
+
+		let data = 	treasury_vault_instruction::WithdrawFromStream {
+				stream_id,
+				_treasury_seed_name: treasury_seed_name.clone(),
+		};		let instruction = Instruction::new_with_bytes(PROGRAM_ID, &data.data(), accounts.to_account_metas(None));
+		let mut transaction = Transaction::new_with_payer(
+			&[instruction], 
+			Some(&recipient_signer.pubkey()),
+		);
+
+		transaction.sign(&[
+			&recipient_signer,
+		], recent_blockhash);
+
+		return transaction;
+	}
+
 }
 
 pub mod csl_spl_token_ix_interface {
-
-	use {
-		solana_sdk::{
-			hash::Hash,
-			signature::{Keypair, Signer},
-			instruction::Instruction,
-			pubkey::Pubkey,
-			transaction::Transaction,
-		},
-		csl_spl_token::{
-			ID as PROGRAM_ID,
-			accounts as csl_spl_token_accounts,
-			instruction as csl_spl_token_instruction,
-		},
-		anchor_lang::{
-			prelude::*,
-			InstructionData,
-		}
-	};
-
+	use anchor_lang::prelude::*;
 	declare_id!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-
 }
 
 pub mod csl_spl_assoc_token_ix_interface {
-
-	use {
-		solana_sdk::{
-			hash::Hash,
-			signature::{Keypair, Signer},
-			instruction::Instruction,
-			pubkey::Pubkey,
-			transaction::Transaction,
-		},
-		csl_spl_assoc_token::{
-			ID as PROGRAM_ID,
-			accounts as csl_spl_assoc_token_accounts,
-			instruction as csl_spl_assoc_token_instruction,
-		},
-		anchor_lang::{
-			prelude::*,
-			InstructionData,
-		}
-	};
-
+	use anchor_lang::prelude::*;
 	declare_id!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+}
 
+pub mod system_program {
+	use anchor_lang::prelude::*;
+	declare_id!("11111111111111111111111111111111");
 }

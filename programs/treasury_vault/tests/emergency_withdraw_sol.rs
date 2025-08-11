@@ -59,7 +59,7 @@ async fn emergency_withdraw_sol_ix_success() {
 		Account {
 			lamports: 1_000_000_000_000,
 			data: vec![],
-			owner: treasury_vault_ix_interface::ID,
+			owner: treasury_vault::ID,
 			executable: false,
 			rent_epoch: 0,
 		},

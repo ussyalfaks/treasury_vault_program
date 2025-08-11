@@ -62,7 +62,7 @@ async fn update_payout_schedule_ix_success() {
 	let (recipient_pda, _recipient_pda_bump) = Pubkey::find_program_address(
 		&[
 			b"recipient",
-			treasury_pubkey.as_ref(),
+			treasury_pda.as_ref(),
 			recipient_address.as_ref(),
 		],
 		&treasury_vault::ID,
@@ -71,8 +71,8 @@ async fn update_payout_schedule_ix_success() {
 	let (payout_schedule_pda, _payout_schedule_pda_bump) = Pubkey::find_program_address(
 		&[
 			b"schedule",
-			treasury_pubkey.as_ref(),
-			recipient_pubkey.as_ref(),
+			treasury_pda.as_ref(),
+			recipient_pda.as_ref(),
 			schedule_id.to_le_bytes().as_ref(),
 		],
 		&treasury_vault::ID,
@@ -84,7 +84,7 @@ async fn update_payout_schedule_ix_success() {
 		Account {
 			lamports: 1_000_000_000_000,
 			data: vec![],
-			owner: treasury_vault_ix_interface::ID,
+			owner: treasury_vault::ID,
 			executable: false,
 			rent_epoch: 0,
 		},

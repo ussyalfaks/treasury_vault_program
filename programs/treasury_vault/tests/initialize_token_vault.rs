@@ -73,7 +73,7 @@ async fn initialize_token_vault_ix_success() {
 	let (token_vault_pda, _token_vault_pda_bump) = Pubkey::find_program_address(
 		&[
 			b"token_vault",
-			treasury_pubkey.as_ref(),
+			treasury_pda.as_ref(),
 			token_mint_pubkey.as_ref(),
 		],
 		&treasury_vault::ID,

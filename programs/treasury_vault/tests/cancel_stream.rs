@@ -16,7 +16,7 @@ use {
 
 
 #[tokio::test]
-async fn add_recipient_ix_success() {
+async fn cancel_stream_ix_success() {
 	let mut program_test = get_program_test();
 
 	// PROGRAMS
@@ -36,18 +36,16 @@ async fn add_recipient_ix_success() {
 
 	// DATA
 	let recipient_address: Pubkey = Pubkey::default();
-	let name: String = Default::default();
-	let role: u8 = Default::default();
-	let treasury_seed_name: String = Default::default();
+	let stream_id: u64 = 1;
+	let treasury_seed_name: String = String::from("test_treasury");
 
 	// KEYPAIR
 	let authority_keypair = Keypair::new();
+	let recipient_wallet_keypair = Keypair::new();
 
 	// PUBKEY
 	let authority_pubkey = authority_keypair.pubkey();
-
-	// EXECUTABLE PUBKEY
-	let system_program_pubkey = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+	let recipient_wallet_pubkey = recipient_wallet_keypair.pubkey();
 
 	// PDA
 	let (treasury_pda, _treasury_pda_bump) = Pubkey::find_program_address(
@@ -67,11 +65,32 @@ async fn add_recipient_ix_success() {
 		&treasury_vault::ID,
 	);
 
+	let (streaming_schedule_pda, _streaming_schedule_pda_bump) = Pubkey::find_program_address(
+		&[
+			b"stream",
+			treasury_pda.as_ref(),
+			recipient_pda.as_ref(),
+			stream_id.to_le_bytes().as_ref(),
+		],
+		&treasury_vault::ID,
+	);
+
 	// ACCOUNT PROGRAM TEST SETUP
 	program_test.add_account(
 		authority_pubkey,
 		Account {
-			lamports: 0,
+			lamports: 1_000_000_000, // 1 SOL for fees
+			data: vec![],
+			owner: system_program::ID,
+			executable: false,
+			rent_epoch: 0,
+		},
+	);
+
+	program_test.add_account(
+		recipient_wallet_pubkey,
+		Account {
+			lamports: 100_000_000, // 0.1 SOL
 			data: vec![],
 			owner: system_program::ID,
 			executable: false,
@@ -82,18 +101,15 @@ async fn add_recipient_ix_success() {
 	// INSTRUCTIONS
 	let (mut banks_client, _, recent_blockhash) = program_test.start().await;
 
-	let ix = treasury_vault_ix_interface::add_recipient_ix_setup(
+	let ix = treasury_vault_ix_interface::cancel_stream_ix_setup(
 		treasury_pda,
 		recipient_pda,
+		streaming_schedule_pda,
 		&authority_keypair,
-		system_program_pubkey,
+		recipient_wallet_pubkey,
 		recipient_address,
-		&name,
-		role,
+		stream_id,
 		&treasury_seed_name,
-		None, // token_gate_mint
-		None, // recipient_token_account
-		None, // token_program
 		recent_blockhash,
 	);
 
@@ -101,5 +117,4 @@ async fn add_recipient_ix_success() {
 
 	// ASSERTIONS
 	assert!(result.is_ok());
-
 }

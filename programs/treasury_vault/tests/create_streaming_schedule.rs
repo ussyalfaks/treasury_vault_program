@@ -16,7 +16,7 @@ use {
 
 
 #[tokio::test]
-async fn add_recipient_ix_success() {
+async fn create_streaming_schedule_ix_success() {
 	let mut program_test = get_program_test();
 
 	// PROGRAMS
@@ -36,9 +36,14 @@ async fn add_recipient_ix_success() {
 
 	// DATA
 	let recipient_address: Pubkey = Pubkey::default();
-	let name: String = Default::default();
-	let role: u8 = Default::default();
-	let treasury_seed_name: String = Default::default();
+	let stream_id: u64 = 1;
+	let total_amount: u64 = 1000000000; // 1 SOL
+	let amount_per_second: u64 = 11574; // ~1 SOL per day
+	let start_time: i64 = 1640995200; // 2022-01-01 00:00:00 UTC
+	let cliff_time: i64 = 1640995200; // Same as start time for no cliff
+	let duration_seconds: u64 = 86400; // 1 day
+	let token_mint: Option<Pubkey> = None; // SOL stream
+	let treasury_seed_name: String = String::from("test_treasury");
 
 	// KEYPAIR
 	let authority_keypair = Keypair::new();
@@ -67,11 +72,21 @@ async fn add_recipient_ix_success() {
 		&treasury_vault::ID,
 	);
 
+	let (streaming_schedule_pda, _streaming_schedule_pda_bump) = Pubkey::find_program_address(
+		&[
+			b"stream",
+			treasury_pda.as_ref(),
+			recipient_pda.as_ref(),
+			stream_id.to_le_bytes().as_ref(),
+		],
+		&treasury_vault::ID,
+	);
+
 	// ACCOUNT PROGRAM TEST SETUP
 	program_test.add_account(
 		authority_pubkey,
 		Account {
-			lamports: 0,
+			lamports: 1_000_000_000, // 1 SOL for fees
 			data: vec![],
 			owner: system_program::ID,
 			executable: false,
@@ -82,18 +97,21 @@ async fn add_recipient_ix_success() {
 	// INSTRUCTIONS
 	let (mut banks_client, _, recent_blockhash) = program_test.start().await;
 
-	let ix = treasury_vault_ix_interface::add_recipient_ix_setup(
+	let ix = treasury_vault_ix_interface::create_streaming_schedule_ix_setup(
 		treasury_pda,
 		recipient_pda,
+		streaming_schedule_pda,
 		&authority_keypair,
 		system_program_pubkey,
 		recipient_address,
-		&name,
-		role,
+		stream_id,
+		total_amount,
+		amount_per_second,
+		start_time,
+		cliff_time,
+		duration_seconds,
+		token_mint,
 		&treasury_seed_name,
-		None, // token_gate_mint
-		None, // recipient_token_account
-		None, // token_program
 		recent_blockhash,
 	);
 
@@ -101,5 +119,4 @@ async fn add_recipient_ix_success() {
 
 	// ASSERTIONS
 	assert!(result.is_ok());
-
 }
